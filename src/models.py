@@ -1,16 +1,29 @@
 import torch
 from facenet_pytorch import MTCNN, InceptionResnetV1
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+# Force CPU (Render free tier has no GPU)
+device = "cpu"
 
-mtcnn = MTCNN(
-    image_size=160,
-    margin=20,
-    select_largest=True,
-    keep_all=False,
-    device=device
-)
+_mtcnn = None
+_resnet = None
 
-resnet = InceptionResnetV1(
-    pretrained="vggface2"
-).eval().to(device)
+def get_models():
+    global _mtcnn, _resnet
+
+    if _mtcnn is None:
+        print("Loading MTCNN model...")
+        _mtcnn = MTCNN(
+            image_size=160,
+            margin=20,
+            select_largest=True,
+            keep_all=False,
+            device=device
+        )
+
+    if _resnet is None:
+        print("Loading FaceNet model...")
+        _resnet = InceptionResnetV1(
+            pretrained="vggface2"
+        ).eval().to(device)
+
+    return _mtcnn, _resnet

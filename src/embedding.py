@@ -2,10 +2,14 @@ import numpy as np
 import torch
 from PIL import Image
 
-from src.models import mtcnn, resnet
+from src.models import get_models
 from src.preprocessing import generate_variants
 
+
 def extract_single(img_np):
+    # Load models only when needed (lazy loading)
+    mtcnn, resnet = get_models()
+
     img = Image.fromarray(img_np)
     face = mtcnn(img)
 
@@ -16,6 +20,7 @@ def extract_single(img_np):
         emb = resnet(face.unsqueeze(0))[0].cpu().numpy()
 
     return emb / np.linalg.norm(emb)
+
 
 def extract_multi(img_np):
     embeddings = {}
